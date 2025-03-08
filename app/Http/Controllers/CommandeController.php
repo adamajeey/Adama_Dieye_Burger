@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Commande;
+use App\Models\Commande_detail;
 use Illuminate\Http\Request;
 
 class CommandeController extends Controller
@@ -20,25 +21,35 @@ class CommandeController extends Controller
     }
 
 
-    public function valider_panier (Request $request)
+    public function valider_panier(Request $request)
     {
-        $validated = request()->validate([
-            'numComande' => 'required',
+        $validated = $request->validate([
+            'numCommande' => 'required',
             'statut' => 'required',
-            'burgers*' => 'array|required',
-            'quantite*' => 'array|required'
+            'burgers' => 'required|array',
+            'quantite' => 'required|array'
         ]);
+
+        // Création de la commande
         $commande = new Commande();
-        $commande->numCommande= $validated['numCommande'];
-        $commande->statut= $validated['statut'];
+        $commande->numCommande = $validated['numCommande'];
+        $commande->statut = $validated['statut'];
+//        ou
+//        $commande->statut = 0;
         $commande->save();
 
-        foreach ($validated['burgers'] as $burger) {
-
+        // Ajout des détails de commande
+        foreach ($validated['burgers'] as $index => $burger_id) {
+            $commande_detail = new Commande_detail();
+            $commande_detail->commande_id = $commande->id;
+            $commande_detail->burger_id = $burger_id;
+            $commande_detail->quantite = $validated['quantite'][$index] ?? 1;
+            $commande_detail->save();
         }
-        $commande_detail= new Commande_Detail();
 
+        return response()->json(['message' => 'Commande validée avec succès', 'commande' => $commande], 201);
     }
+
 
     public function store(Request $request)
     {

@@ -19,25 +19,22 @@ class Commande_DetailController extends Controller
         return view('commande_detail.create');
 //        C 'est le panier
     }
-    public function store(Request $request)
-    {
-        $request->validate([
-            'commande_id' => 'required',
-            'burger*' => 'array|required',
-            'quantite' => 'required',
-        ]);
-        $commande_detail = new Commande_detail();
-        $commande_detail->commande_id=request('commande_id');
-        $commande_detail->quantite=request('quantite');
-
-        foreach (request('burger') as $burger)
-        {
-
-        }
-
-        $commande_detail->save();
-
-    }
+//    public function store(Request $request)
+//    {
+//        $request->validate([
+//            'commande_id' => 'required',
+//            'burger*' => 'array|required',
+//            'quantite' => 'required',
+//        ]);
+//        $commande_detail = new Commande_detail();
+//        $commande_detail->commande_id=request('commande_id');
+//        $commande_detail->quantite=request('quantite');
+//
+//
+//
+//        $commande_detail->save();
+//
+//    }
     public function show(Commande_Detail $commande_Detail)
     {
 
