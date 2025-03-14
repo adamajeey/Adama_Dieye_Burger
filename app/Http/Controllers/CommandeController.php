@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Commande;
 use App\Models\Commande_detail;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class CommandeController extends Controller
 {
@@ -27,32 +28,119 @@ class CommandeController extends Controller
     {
         return view('commandes.create');
     }
-
     public function valider_panier(Request $request)
     {
         // Vérifier les données envoyées
-        $validated = $request->validate([
-            'numCommande' => 'required',
-            'statut' => 'required',
-            'burgers' => 'required|array',
-            'burgers.*.id' => 'required|integer|exists:burgers,id',
-            'burgers.*.quantite' => 'required|integer|min:1'
-        ]);
+//        $validated = $request->validate([
+//            'numCommande' => 'required',
+//            'statut' => 'required',
+//            'burgers' => 'required|array',
+//            'burgers.*.id' => 'required|integer|exists:burgers,id',
+//            'burgers.*.quantite' => 'required|integer|min:1'
+//        ]);
+//
+//        // Créer la commande
+//        $commande = new Commande();
+//        $commande->numCommande = $validated['numCommande'];
+//        $commande->statut = $validated['statut'];
+//        $commande->user_id = auth()->id();
+//        $commande->save();
+//
+//        // Ajouter les articles de la commande
+//        foreach ($validated['burgers'] as $burger) {
+//            $commande->burgers()->attach($burger['id'], ['quantite' => $burger['quantite']]);
+//        }
+//
+//        return response()->json(['message' => 'Commande enregistrée avec succès'], 200);
 
-        // Créer la commande
-        $commande = new Commande();
-        $commande->numCommande = $validated['numCommande'];
-        $commande->statut = $validated['statut'];
-        $commande->user_id = auth()->id();
-        $commande->save();
+////        try {
+////            // Exemple : Traitement du panier (ajuster selon ton besoin)
+////            $data = $request->all();
+////
+////            // Simuler une validation réussie
+////            return response()->json([
+////                'status' => 'success',
+////                'message' => 'Commande validée avec succès !',
+////                'data' => $data
+////            ]);
+////        } catch (\Exception $e) {
+////            return response()->json([
+////                'status' => 'error',
+////                'message' => 'Une erreur est survenue.',
+////                'error' => $e->getMessage()
+////            ], 500);
+//        }
 
-        // Ajouter les articles de la commande
-        foreach ($validated['burgers'] as $burger) {
-            $commande->burgers()->attach($burger['id'], ['quantite' => $burger['quantite']]);
+
+        try {
+            // Vérifier si le panier est vide
+            if (!$request->has('panier') || empty($request->panier)) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Le panier est vide.'
+                ], 400);
+            }
+
+            // Démarrer une transaction pour garantir l'intégrité des données
+            DB::beginTransaction();
+
+            // Création de la commande principale
+            $commande = Commande::create([
+                'user_id' => auth()->id(), // Associer à l'utilisateur connecté
+                'total' => collect($request->panier)->sum(fn($item) => $item['prix'] * $item['quantite']),
+                'status' => 'en attente'
+            ]);
+
+            // Enregistrer chaque article dans la table commande_details
+            foreach ($request->panier as $item) {
+                Commande_detail::create([
+                    'commande_id' => $commande->id,
+                    'burger_id' => $item['id'],
+                    'quantite' => $item['quantite'],
+//                    'prix_unitaire' => $item['prix']
+                ]);
+            }
+
+            // Valider la transaction
+            DB::commit();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Commande validée avec succès !'
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Une erreur est survenue.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+
+    public function validerPanier(Request $request)
+    {
+        try {
+            $data = $request->all();
+
+            // Simuler une validation réussie
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Commande validée avec succès !',
+                'data' => $data
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Une erreur est survenue.',
+                'error' => $e->getMessage()
+            ], 500);
         }
 
-        return response()->json(['message' => 'Commande enregistrée avec succès'], 200);
     }
+
 
 
     public function store(Request $request)
