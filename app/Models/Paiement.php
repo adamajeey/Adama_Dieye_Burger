@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Permission\Traits\HasPermissions;
+use Spatie\Permission\Traits\HasRoles;
 
 class Paiement extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, HasRoles, HasPermissions;
     protected $table = 'paiements';
     protected $fillable = [
         'url_pdf',

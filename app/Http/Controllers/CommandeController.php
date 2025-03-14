@@ -8,61 +8,64 @@ use Illuminate\Http\Request;
 
 class CommandeController extends Controller
 {
-
     public function index()
     {
         $commandes= Commande::all();
         return view('commandes.index', compact('commandes'));
     }
-    public function create()
-    {
 
-        return  redirect()->route('commandes.index')->with('success', 'La commande ');
+    /**
+     * Affiche les commandes de l'utilisateur connecté.
+     */
+    public function mesCommandes()
+    {
+        $commandes = Commande::where('user_id', auth()->id())->get();
+        return view('commandes.mes_commandes', compact('commandes'));
     }
 
+    public function create()
+    {
+        return view('commandes.create');
+    }
 
     public function valider_panier(Request $request)
     {
+        // Vérifier les données envoyées
         $validated = $request->validate([
             'numCommande' => 'required',
             'statut' => 'required',
             'burgers' => 'required|array',
-            'quantite' => 'required|array'
+            'burgers.*.id' => 'required|integer|exists:burgers,id',
+            'burgers.*.quantite' => 'required|integer|min:1'
         ]);
 
-        // Création de la commande
+        // Créer la commande
         $commande = new Commande();
         $commande->numCommande = $validated['numCommande'];
         $commande->statut = $validated['statut'];
-//        ou
-//        $commande->statut = 0;
+        $commande->user_id = auth()->id();
         $commande->save();
 
-        // Ajout des détails de commande
-        foreach ($validated['burgers'] as $index => $burger_id) {
-            $commande_detail = new Commande_detail();
-            $commande_detail->commande_id = $commande->id;
-            $commande_detail->burger_id = $burger_id;
-            $commande_detail->quantite = $validated['quantite'][$index] ?? 1;
-            $commande_detail->save();
+        // Ajouter les articles de la commande
+        foreach ($validated['burgers'] as $burger) {
+            $commande->burgers()->attach($burger['id'], ['quantite' => $burger['quantite']]);
         }
 
-        return response()->json(['message' => 'Commande validée avec succès', 'commande' => $commande], 201);
+        return response()->json(['message' => 'Commande enregistrée avec succès'], 200);
     }
 
 
     public function store(Request $request)
     {
         $validated = request()->validate([
-            'num' => 'required',
+            'numCommande' => 'required', // Changé "num" en "numCommande" pour correspondre à votre modèle
             'statut' => 'required'
-
         ]);
+
         $commande = new Commande();
-        $commande->statut= 0;
-        $commande->numCommande= $validated['numCommande'];
-
-
+        $commande->statut = $validated['statut']; // Utilisez la valeur validée
+        $commande->numCommande = $validated['numCommande'];
+        $commande->user_id = auth()->id(); // Ajouter l'ID de l'utilisateur connecté
 
         if ($request->hasfile('image')) {
             $file = $request->file('image');
@@ -71,33 +74,33 @@ class CommandeController extends Controller
             $file->move('uploads/commandes/', $filename);
             $commande->image = 'uploads/commandes/' . $filename;
         }
-        $commande->save();
-        return  redirect()->route('commandes.index')->with('success', 'la commande a ete ajouter avec succes ');
 
+        $commande->save();
+        return redirect()->route('commandes.index')->with('success', 'La commande a été ajoutée avec succès');
     }
+
     public function show($id)
     {
-        $commande=Commande::find($id);
+        $commande = Commande::with(['details.burger'])->find($id);
         return view('commandes.show', compact('commande'));
     }
-    public function edit($id )
+
+    public function edit($id)
     {
-        $commande=Commande::find($id);
-        return  redirect()->route('commandes.id', $commande);
+        $commande = Commande::find($id);
+        return redirect()->route('commandes.id', $commande);
     }
+
     public function update(Request $request, $id)
     {
         $validated = request()->validate([
             'numCommande' => 'required',
             'statut' => 'required'
-
         ]);
 
-        $commande=Commande::find($id);
-        $commande->statut= $validated['numCommande'];;
-        $commande->numCommande= $validated['numCommande'];
-
-
+        $commande = Commande::find($id);
+        $commande->statut = $validated['statut']; // Correction: utilisez statut au lieu de numCommande
+        $commande->numCommande = $validated['numCommande'];
 
         if ($request->hasfile('image')) {
             $file = $request->file('image');
@@ -106,14 +109,17 @@ class CommandeController extends Controller
             $file->move('uploads/commandes/', $filename);
             $commande->image = 'uploads/commandes/' . $filename;
         }
+
         $commande->save();
-        return  redirect()->route('commandes.index')->with('success', 'la commande a ete modifier avec succes ');
-    }
-    public function destroy($id)
-    {
-        $commande= Commande::find($id);
-        $commande->delete();
-        return redirect()->route('commandes.index')->with('success', 'la commande a ete supprimer avec succes ');
+        return redirect()->route('commandes.index')->with('success', 'La commande a été modifiée avec succès');
     }
 
+
+
+    public function destroy($id)
+    {
+        $commande = Commande::find($id);
+        $commande->delete();
+        return redirect()->route('commandes.index')->with('success', 'La commande a été supprimée avec succès');
+    }
 }

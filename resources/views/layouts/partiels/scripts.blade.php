@@ -11,3 +11,4 @@
 
 <!-- Template Javascript -->
 <script src="{{asset('backoffice/assets/js/main.js')}}"></script>
+

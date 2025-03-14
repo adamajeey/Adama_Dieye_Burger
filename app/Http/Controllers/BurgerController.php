@@ -10,13 +10,14 @@ class BurgerController extends Controller
 {
     public function index()
     {
+
         $burgers= Burger::all();
         return view('burgers.index', compact('burgers'));
     }
+
     public function create()
     {
-
-        return  redirect()->route('burgers.index')->with('success', 'le burger ');
+        return view('burgers.create');
     }
     public function store(Request $request)
     {
@@ -25,13 +26,13 @@ class BurgerController extends Controller
             'prix' => 'required',
             'description' => 'required',
             'stock' => 'required',
-            'image' => 'required',
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
 
         ]);
         $burger = new Burger();
         $burger->libelle= $validated['libelle'];
         $burger->prix= $validated['prix'];
-        $burger->desciption= $validated['description'];
+        $burger->description= $validated['description'];
         $burger->stock= $validated['stock'];
 
 
@@ -55,7 +56,7 @@ class BurgerController extends Controller
     public function edit($id )
     {
         $burger=Burger::find($id);
-        return  redirect()->route('burgers.id', $burger);
+        return view('burgers.edit', compact('burger'));
     }
     public function update(Request $request, $id)
     {
@@ -71,7 +72,7 @@ class BurgerController extends Controller
         $burger=Burger::find($id);
         $burger->libelle= $validated['libelle'];
         $burger->prix= $validated['prix'];
-        $burger->desciption= $validated['description'];
+        $burger->description= $validated['description'];
         $burger->stock= $validated['stock'];
 
 
@@ -86,6 +87,32 @@ class BurgerController extends Controller
         $burger->save();
         return  redirect()->route('burgers.index')->with('success', 'le burger a ete modifier avec succes ');
     }
+
+    public function catalogue(Request $request)
+    {
+        $query = Burger::query();
+
+        // Appliquer les filtres
+        if ($request->has('prix_min') && is_numeric($request->prix_min)) {
+            $query->where('prix', '>=', $request->prix_min);
+        }
+
+        if ($request->has('prix_max') && is_numeric($request->prix_max)) {
+            $query->where('prix', '<=', $request->prix_max);
+        }
+
+        if ($request->has('libelle') && !empty($request->libelle)) {
+            $query->where('libelle', 'like', '%' . $request->libelle . '%');
+        }
+
+        // N'afficher que les burgers avec un stock positif
+        $query->where('stock', '>', 0);
+
+        $burgers = $query->orderBy('libelle')->paginate(9);
+
+        return view('burgers.catalogue', compact('burgers'));
+    }
+
     public function destroy($id)
     {
         $burger= Burger::find($id);

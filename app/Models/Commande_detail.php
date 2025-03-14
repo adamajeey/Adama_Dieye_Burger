@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Permission\Traits\HasPermissions;
+use Spatie\Permission\Traits\HasRoles;
 
 class Commande_detail extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, HasRoles, HasPermissions;
 
     protected $table = 'commande_details';
 
@@ -31,4 +33,6 @@ class Commande_detail extends Model
     {
         return $this->quantite * $this->burger->prix;
     }
+
+
 }
