@@ -11,7 +11,7 @@ class CommandeController extends Controller
 {
     public function index()
     {
-        $commandes= Commande::all();
+        $commandes = Commande::all();
         return view('commandes.index', compact('commandes'));
     }
 
@@ -29,10 +29,14 @@ class CommandeController extends Controller
         return view('commandes.create');
     }
 
-
-    public function valider_panier(Request $request)
+    /**
+     * Valide le panier et crée une commande
+     * Version adaptée à votre structure de base de données
+     */
+    public function validerPanier(Request $request)
     {
         try {
+            // Vérifier si le panier existe et n'est pas vide
             if (!$request->has('panier') || empty($request->panier)) {
                 return response()->json([
                     'status' => 'error',
@@ -40,85 +44,79 @@ class CommandeController extends Controller
                 ], 400);
             }
 
-            DB::beginTransaction();
-
+            // Vérifier si l'utilisateur est connecté
             $user_id = auth()->id();
             if (!$user_id) {
                 return response()->json([
                     'status' => 'error',
-                    'message' => 'Utilisateur non authentifié.'
+                    'message' => 'Vous devez être connecté pour passer une commande.'
                 ], 401);
             }
 
-            // Crée la commande sans le statut
-            // $commande = Commande::create([
-            //     'user_id' => $user_id,
-            //     'statut' => 0
-            // ]);
+            // Générer un numéro de commande numérique unique (timestamp)
+            $numCommande = time();
 
+            // Créer la commande avec transaction pour assurer l'intégrité
+            DB::beginTransaction();
 
-            foreach ($request->panier as $item) {
-                CommandeDetail::create([
-                    'commande_id' => $commande->id,
-                    'burger_id' => $item['id'],
-                    'quantite' => $item['quantite'],
+            try {
+                // Créer la commande
+                $commande = new Commande();
+                $commande->user_id = $user_id;
+                $commande->numCommande = $numCommande;
+                $commande->statut = 0; // 0 = En attente
+                $commande->save();
+
+                // Créer les détails de la commande
+                foreach ($request->panier as $item) {
+                    $detail = new Commande_detail();
+                    $detail->commande_id = $commande->id;
+                    $detail->burger_id = $item['id'];
+                    $detail->quantite = $item['quantite'];
+                    // Notez qu'il n'y a pas de champ prix_unitaire dans votre table
+                    $detail->save();
+                }
+
+                DB::commit();
+
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Commande validée avec succès! Référence: ' . $numCommande,
+                    'commande' => $commande
                 ]);
+
+            } catch (\Exception $e) {
+                DB::rollBack();
+                throw $e; // Relancer pour le bloc catch externe
             }
 
-            DB::commit();
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Commande validée avec succès.',
-                'commande' => $commande
-            ], 200);
-
         } catch (\Exception $e) {
-            DB::rollBack();
             return response()->json([
                 'status' => 'error',
-                'message' => 'Une erreur est survenue lors de la validation du panier.',
-                'error' => $e->getMessage()
+                'message' => 'Une erreur est survenue lors de la validation du panier: ' . $e->getMessage()
             ], 500);
         }
     }
 
-
-
-
-    public function validerPanier(Request $request)
+    /**
+     * Pour la compatibilité avec l'ancienne route
+     */
+    public function valider_panier(Request $request)
     {
-        try {
-            $data = $request->all();
-
-            // Simuler une validation réussie
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Commande validée avec succès !',
-                'data' => $data
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Une erreur est survenue.',
-                'error' => $e->getMessage()
-            ], 500);
-        }
-
+        return $this->validerPanier($request);
     }
-
-
 
     public function store(Request $request)
     {
         $validated = request()->validate([
-            'numCommande' => 'required', // Changé "num" en "numCommande" pour correspondre à votre modèle
+            'numCommande' => 'required',
             'statut' => 'required'
         ]);
 
         $commande = new Commande();
-        $commande->statut = $validated['statut']; // Utilisez la valeur validée
+        $commande->statut = $validated['statut'];
         $commande->numCommande = $validated['numCommande'];
-        $commande->user_id = auth()->id(); // Ajouter l'ID de l'utilisateur connecté
+        $commande->user_id = auth()->id();
 
         if ($request->hasfile('image')) {
             $file = $request->file('image');
@@ -152,7 +150,7 @@ class CommandeController extends Controller
         ]);
 
         $commande = Commande::find($id);
-        $commande->statut = $validated['statut']; // Correction: utilisez statut au lieu de numCommande
+        $commande->statut = $validated['statut'];
         $commande->numCommande = $validated['numCommande'];
 
         if ($request->hasfile('image')) {
@@ -166,8 +164,6 @@ class CommandeController extends Controller
         $commande->save();
         return redirect()->route('commandes.index')->with('success', 'La commande a été modifiée avec succès');
     }
-
-
 
     public function destroy($id)
     {

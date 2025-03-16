@@ -320,7 +320,7 @@
                         <div class="toast-body">
                             <i class="fa fa-check-circle text-success me-2"></i> ${libelle} a été ajouté au panier.
                         </div>
-                    </div>`; 
+                    </div>`;
 
             document.body.appendChild(toast);
 
@@ -357,8 +357,6 @@
 
                     console.log("Données envoyées :", JSON.stringify({ panier: panierc }));
 
-        
-
                     fetch("http://127.0.0.1:8000/valider-panier", {
                         method: "POST",
                         headers: {
@@ -367,32 +365,26 @@
                         },
                         body: JSON.stringify({ panier: panierc }),
                     })
-                    .then(response => response.text())
-                    .then(text => {
-                        console.log("Réponse brute Laravel :", text);
-                        try {
-                            return JSON.parse(panierc);
-                        } catch (error) {
-                            console.error("Réponse Laravel non valide :", text);
-                            throw new Error("La réponse du serveur n'est pas en JSON.");
-                        }
-                    })
-                    .then(data => {
-                        console.log("Réponse JSON Laravel :", data);
-                        if (data.status === "success") {
-                            alert(data.message);
-                            localStorage.removeItem("panier");
-                            updatePanierDisplay();
-                        } else {
-                            alert("Erreur : " + data.message);
-                        }
-                    })
-                    .catch(error => console.error("Erreur Fetch :", error));
-
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Erreur réseau: ' + response.status);
+                            }
+                            return response.json(); // Utiliser json() au lieu de text() puis parse
+                        })
+                        .then(data => {
+                            console.log("Réponse JSON Laravel :", data);
+                            if (data.status === "success") {
+                                alert(data.message);
+                                localStorage.removeItem("panier");
+                                updatePanierDisplay();
+                            } else {
+                                alert("Erreur : " + data.message);
+                            }
+                        })
+                        .catch(error => console.error("Erreur Fetch :", error));
                 });
             }
         }
-
 
         // Initialiser le formulaire de filtre
         function initFilterForm() {

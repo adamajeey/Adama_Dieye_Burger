@@ -62,7 +62,7 @@
                                                 $total += $detail->burger->prix * $detail->quantite;
                                             }
                                         @endphp
-                                        {{ number_format($total, 2, ',', ' ') }} €
+                                        {{ number_format($total, 2, ',', ' ') }} F CFA
                                     </td>
                                     <td>
                                         <div class="btn-group" role="group">

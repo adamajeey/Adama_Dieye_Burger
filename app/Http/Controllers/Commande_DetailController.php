@@ -17,7 +17,7 @@ class Commande_DetailController extends Controller
     public function create()
     {
         return view('commande_detail.create');
-//        C 'est le panier
+
     }
 //    public function store(Request $request)
 //    {

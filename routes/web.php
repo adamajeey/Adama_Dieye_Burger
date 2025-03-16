@@ -26,9 +26,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/catalogue', [BurgerController::class, 'catalogue'])->name('catalogue');
 
     // Système de panier et validation de commande
-//    Route::post('/valider_panier/{panier}', [CommandeController::class, 'valider_panier'])->name('valider_panier');
-    Route::post('/valider-panier', [CommandeController::class, 'valider_panier'])->name('valider_panier');
-
+    // Correction : Utiliser la méthode validerPanier au lieu de valider_panier
+    Route::post('/valider-panier', [CommandeController::class, 'validerPanier'])->name('valider_panier');
 });
 
 // Routes réservées aux gestionnaires
@@ -38,8 +37,6 @@ Route::middleware(['auth', 'role:gestionnaire'])->group(function () {
 
     // Gestion complète des commandes
     Route::resource('commandes', CommandeController::class);
-
-
 
     // Détails des commandes
     Route::get('/commandes/{commande}/details', [Commande_DetailController::class, 'index'])->name('commande_details.index');
@@ -53,6 +50,5 @@ Route::middleware(['auth', 'role:gestionnaire'])->group(function () {
 
 // Commandes des clients
 Route::get('/mes-commandes', [CommandeController::class, 'mesCommandes'])->name('commandes.mes_commandes');
-
 
 require __DIR__.'/auth.php';

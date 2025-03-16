@@ -49,7 +49,7 @@
                                                     $total += $detail->burger->prix * $detail->quantite;
                                                 }
                                             @endphp
-                                            {{ number_format($total, 2, ',', ' ') }} €
+                                            {{ number_format($total, 2, ',', ' ') }} F CFA
                                         </td>
                                         <td>
                                             <a href="{{ route('commandes.show', $commande->id) }}" class="btn btn-sm btn-info">
