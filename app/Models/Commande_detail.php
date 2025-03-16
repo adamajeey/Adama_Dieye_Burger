@@ -33,6 +33,4 @@ class Commande_detail extends Model
     {
         return $this->quantite * $this->burger->prix;
     }
-
-
 }

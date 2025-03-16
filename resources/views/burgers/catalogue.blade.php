@@ -46,7 +46,6 @@
             </div>
         </div>
 
-        <!-- Liste des burgers -->
         <div class="row g-4">
             @forelse ($burgers as $burger)
                 <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
@@ -321,7 +320,7 @@
                         <div class="toast-body">
                             <i class="fa fa-check-circle text-success me-2"></i> ${libelle} a été ajouté au panier.
                         </div>
-                    </div>`;
+                    </div>`; 
 
             document.body.appendChild(toast);
 
@@ -333,13 +332,12 @@
             }, 3000);
         }
 
-        // Initialiser les boutons de gestion du panier
         function initPanierButtons() {
             const viderPanierBtn = document.getElementById('viderPanier');
             const validerCommandeBtn = document.getElementById('validerCommande');
 
             if (viderPanierBtn) {
-                viderPanierBtn.addEventListener('click', function() {
+                viderPanierBtn.addEventListener('click', function () {
                     if (confirm('Êtes-vous sûr de vouloir vider le panier ?')) {
                         panier = [];
                         savePanier();
@@ -349,82 +347,52 @@
             }
 
             if (validerCommandeBtn) {
-                validerCommandeBtn.addEventListener('click', function() {
-                    if (panier.length === 0) {
-                        alert('Votre panier est vide.');
-                        return;
-                    }
-
-                    // Construire un objet pour envoyer les données
-                    const formData = new FormData();
-                    formData.append('numCommande', Date.now()); // Numéro de commande unique
-                    formData.append('statut', 'en attente'); // Statut initial de la commande
-
-                    panier.forEach((item, index) => {
-                        formData.append(`burgers[${index}][id]`, item.id);
-                        formData.append(`burgers[${index}][quantite]`, item.quantite);
-                    });
-
-                    // Envoyer la requête avec Fetch API
-                    {{--fetch('{{ route("valider_panier") }}', {--}}
-                    {{--    method: 'POST',--}}
-                    {{--    headers: {--}}
-                    {{--        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),--}}
-                    {{--        'Content-Type': 'application/json' // S'assurer que la requête est bien JSON--}}
-                    {{--    },--}}
-                    {{--    body: JSON.stringify({}) // Envoie des données vides pour tester--}}
-                    {{--})--}}
-                    {{--    .then(response => {--}}
-                    {{--        console.log("Le statut est : ", response.status)--}}
-                    {{--        return response.text()--}}
-                    {{--    }) // <-- Récupère la réponse en texte--}}
-                    {{--    // .then(text => {--}}
-                    {{--    //     console.log("Réponse brute du serveur :", text); // Affiche ce que Laravel renvoie--}}
-                    {{--    //     return JSON.parse(text); // Essaye de convertir en JSON--}}
-                    {{--    // })--}}
-                    {{--    .then(text => {--}}
-                    {{--        console.log("Réponse brute du serveur :", text); // Voir si Laravel renvoie du HTML--}}
-                    {{--    })--}}
-                    {{--    .then(data => {--}}
-                    {{--        console.log("Données JSON reçues :", data);--}}
-                    {{--    })--}}
-                    {{--    .catch(error => console.error("Erreur de parsing JSON :", error));--}}
-
-
-
-                    // Récupérer le panier depuis localStorage
+                validerCommandeBtn.addEventListener('click', function () {
                     let panierc = JSON.parse(localStorage.getItem('panier')) || [];
 
                     if (panierc.length === 0) {
                         alert("Votre panier est vide !");
-                    } else {
-                        fetch('{{ route("valider_panier") }}', {
-                            method: 'POST',
-                            headers: {
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({ panier: panierc }) // Envoyer le panier en JSON
-                        })
-                            .then(response => response.json())
-                            .then(data => {
-                                if (data.status === "success") {
-                                    alert(data.message);
-                                    localStorage.removeItem('panier'); // Vider le panier après validation
-                                    updatePanierDisplay();
-                                } else {
-                                    alert("Erreur : " + data.message);
-                                }
-                            })
-                            .catch(error => console.error("Erreur Fetch :", error));
+                        return;
                     }
 
+                    console.log("Données envoyées :", JSON.stringify({ panier: panierc }));
 
+        
+
+                    fetch("http://127.0.0.1:8000/valider-panier", {
+                        method: "POST",
+                        headers: {
+                            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({ panier: panierc }),
+                    })
+                    .then(response => response.text())
+                    .then(text => {
+                        console.log("Réponse brute Laravel :", text);
+                        try {
+                            return JSON.parse(panierc);
+                        } catch (error) {
+                            console.error("Réponse Laravel non valide :", text);
+                            throw new Error("La réponse du serveur n'est pas en JSON.");
+                        }
+                    })
+                    .then(data => {
+                        console.log("Réponse JSON Laravel :", data);
+                        if (data.status === "success") {
+                            alert(data.message);
+                            localStorage.removeItem("panier");
+                            updatePanierDisplay();
+                        } else {
+                            alert("Erreur : " + data.message);
+                        }
+                    })
+                    .catch(error => console.error("Erreur Fetch :", error));
 
                 });
             }
-
         }
+
 
         // Initialiser le formulaire de filtre
         function initFilterForm() {
