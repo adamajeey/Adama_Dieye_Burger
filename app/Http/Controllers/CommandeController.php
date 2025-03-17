@@ -109,12 +109,12 @@ class CommandeController extends Controller
     public function store(Request $request)
     {
         $validated = request()->validate([
-            'numCommande' => 'required',
-            'statut' => 'required'
+            'numCommande' => 'required|integer|unique:commandes,numCommande',
+            'statut' => 'required|integer|between:0,3'
         ]);
 
         $commande = new Commande();
-        $commande->statut = $validated['statut'];
+        $commande->statut = (int)$validated['statut'];
         $commande->numCommande = $validated['numCommande'];
         $commande->user_id = auth()->id();
 
@@ -132,28 +132,34 @@ class CommandeController extends Controller
 
     public function show($id)
     {
-        $commande = Commande::with(['details.burger'])->find($id);
+        $commande = Commande::with(['details.burger'])->findOrFail($id);
         return view('commandes.show', compact('commande'));
     }
 
     public function edit($id)
     {
-        $commande = Commande::find($id);
-        return redirect()->route('commandes.id', $commande);
+        $commande = Commande::findOrFail($id);
+        return view('commandes.edit', compact('commande'));
     }
 
     public function update(Request $request, $id)
     {
+        $commande = Commande::findOrFail($id);
+
         $validated = request()->validate([
-            'numCommande' => 'required',
-            'statut' => 'required'
+            'numCommande' => 'required|integer|unique:commandes,numCommande,' . $id,
+            'statut' => 'required|integer|between:0,3'
         ]);
 
-        $commande = Commande::find($id);
-        $commande->statut = $validated['statut'];
+        $commande->statut = (int)$validated['statut'];
         $commande->numCommande = $validated['numCommande'];
 
         if ($request->hasfile('image')) {
+            // Supprimer l'ancienne image si elle existe
+            if ($commande->image && file_exists(public_path($commande->image))) {
+                unlink(public_path($commande->image));
+            }
+
             $file = $request->file('image');
             $extension = $file->getClientOriginalExtension();
             $filename = time() . '.' . $extension;
@@ -167,7 +173,19 @@ class CommandeController extends Controller
 
     public function destroy($id)
     {
-        $commande = Commande::find($id);
+        $commande = Commande::findOrFail($id);
+
+        // Vérifier s'il y a des détails liés à cette commande
+        if ($commande->details()->count() > 0) {
+            // Supprimer d'abord les détails
+            $commande->details()->delete();
+        }
+
+        // Supprimer l'image si elle existe
+        if ($commande->image && file_exists(public_path($commande->image))) {
+            unlink(public_path($commande->image));
+        }
+
         $commande->delete();
         return redirect()->route('commandes.index')->with('success', 'La commande a été supprimée avec succès');
     }

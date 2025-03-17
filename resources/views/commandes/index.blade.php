@@ -43,7 +43,7 @@
                             @forelse ($commandes as $commande)
                                 <tr>
                                     <td>{{ $commande->numCommande }}</td>
-                                    <td>{{ $commande->user->name ?? 'N/A' }}</td>
+                                    <td>{{ $commande->user->prenom ?? 'N/A' }} {{ $commande->user->nom ?? 'N/A' }}</td>
                                     <td>
                                         <span class="badge {{
                                             $commande->statut == 'En attente' ? 'bg-warning' :

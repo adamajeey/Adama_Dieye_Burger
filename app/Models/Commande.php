@@ -15,8 +15,29 @@ class Commande extends Model
     protected $table = 'commandes';
     protected $fillable = [
         'numCommande',
-        'statut'
+        'statut',
+        'user_id'
     ];
+
+    // Constantes pour les statuts
+    const STATUT_EN_ATTENTE = 0;
+    const STATUT_EN_PREPARATION = 1;
+    const STATUT_EN_LIVRAISON = 2;
+    const STATUT_PAYEE = 3;
+
+    // Tableau pour l'affichage des statuts en texte
+    public static $statutsTexte = [
+        self::STATUT_EN_ATTENTE => 'En attente',
+        self::STATUT_EN_PREPARATION => 'En préparation',
+        self::STATUT_EN_LIVRAISON => 'En livraison',
+        self::STATUT_PAYEE => 'Payée'
+    ];
+
+    // Méthode pour obtenir le libellé du statut
+    public function getStatutTexte()
+    {
+        return self::$statutsTexte[$this->statut] ?? 'Inconnu';
+    }
 
     public function burgers()
     {
