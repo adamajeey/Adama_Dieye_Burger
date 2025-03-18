@@ -150,7 +150,17 @@
                                     <td>{{ $commande->user->prenom }} {{ $commande->user->nom }}</td>
                                     <td>{{ $commande->created_at->format('d/m/Y H:i') }}</td>
                                     <td>
-                                        <span class="badge {{ $commande->statutColor }}">{{ $commande->statut }}</span>
+                                        @if($commande->statut == 'En attente' || $commande->statut == 0)
+                                            <span class="badge bg-warning">En attente</span>
+                                        @elseif($commande->statut == 'En préparation' || $commande->statut == 1)
+                                            <span class="badge bg-info">En préparation</span>
+                                        @elseif($commande->statut == 'Prête' || $commande->statut == 2)
+                                            <span class="badge bg-success">Prête</span>
+                                        @elseif($commande->statut == 'Payée' || $commande->statut == 3)
+                                            <span class="badge bg-primary">Payée</span>
+                                        @else
+                                            <span class="badge bg-secondary">{{ $commande->statut }}</span>
+                                        @endif
                                     </td>
                                     <td>
                                         @php
@@ -180,6 +190,7 @@
         </div>
     </div>
 @endsection
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -240,6 +251,6 @@
         });
     });
 </script>
-@section('scripts')
 
+@section('scripts')
 @endsection
