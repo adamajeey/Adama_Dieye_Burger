@@ -2,10 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
+use App\Notifications\NouvelleCommande;
 use App\Models\Commande;
 use App\Models\Commande_detail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Notifications\CommandeConfirmation;
+use App\Notifications\FacturePrete;
 
 class CommandeController extends Controller
 {
@@ -77,6 +81,15 @@ class CommandeController extends Controller
                     $detail->save();
                 }
 
+                // Envoyer la notification de confirmation à l'utilisateur
+                $commande->user->notify(new CommandeConfirmation($commande));
+
+                // Notifier tous les gestionnaires
+                $gestionnaires = User::where('role', 'gestionnaire')->get();
+                foreach ($gestionnaires as $gestionnaire) {
+                    $gestionnaire->notify(new NouvelleCommande($commande));
+                }
+
                 DB::commit();
 
                 return response()->json([
@@ -145,6 +158,7 @@ class CommandeController extends Controller
     public function update(Request $request, $id)
     {
         $commande = Commande::findOrFail($id);
+        $oldStatut = $commande->statut; // Sauvegarde l'ancien statut
 
         $validated = request()->validate([
             'numCommande' => 'required|integer|unique:commandes,numCommande,' . $id,
@@ -154,6 +168,7 @@ class CommandeController extends Controller
         $commande->statut = (int)$validated['statut'];
         $commande->numCommande = $validated['numCommande'];
 
+        // Gestion des images
         if ($request->hasfile('image')) {
             // Supprimer l'ancienne image si elle existe
             if ($commande->image && file_exists(public_path($commande->image))) {
@@ -168,6 +183,12 @@ class CommandeController extends Controller
         }
 
         $commande->save();
+
+        // Si le statut passe à 2 (Prête), envoyer une notification avec facture
+        if ($oldStatut != 2 && $commande->statut == 2) {
+            $commande->user->notify(new FacturePrete($commande));
+        }
+
         return redirect()->route('commandes.index')->with('success', 'La commande a été modifiée avec succès');
     }
 
