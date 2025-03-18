@@ -6,10 +6,12 @@ use App\Http\Controllers\BurgerController;
 use App\Http\Controllers\Commande_DetailController;
 use App\Http\Controllers\PaiementController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use Illuminate\Support\Facades\Route;
 
+// Rediriger la page d'accueil vers la page de connexion
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->route('login');
 });
 
 // Routes accessibles à tous les utilisateurs connectés
@@ -26,7 +28,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/catalogue', [BurgerController::class, 'catalogue'])->name('catalogue');
 
     // Système de panier et validation de commande
-    // Correction : Utiliser la méthode validerPanier au lieu de valider_panier
     Route::post('/valider-panier', [CommandeController::class, 'validerPanier'])->name('valider_panier');
 });
 

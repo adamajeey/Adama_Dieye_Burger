@@ -1,6 +1,23 @@
 @extends('layouts.master')
 
 @section('contenu')
+    <!-- Définition des statuts -->
+    @php
+        $statusLabels = [
+            0 => 'En attente',
+            1 => 'En préparation',
+            2 => 'Prête',
+            3 => 'Payée'
+        ];
+
+        $statusColors = [
+            0 => 'bg-warning',     // En attente
+            1 => 'bg-info',        // En préparation
+            2 => 'bg-success',     // Prête
+            3 => 'bg-primary'      // Payée
+        ];
+    @endphp
+
     <div class="container-fluid pt-4 px-4">
         <div class="row g-4">
             <div class="col-12">
@@ -106,15 +123,9 @@
                                     <td>{{ $commande->numCommande }}</td>
                                     <td>{{ $commande->created_at->format('d/m/Y H:i') }}</td>
                                     <td>
-                                        @if($commande->statut == 'En attente')
-                                            <span class="badge bg-warning">En attente</span>
-                                        @elseif($commande->statut == 'En préparation')
-                                            <span class="badge bg-info">En préparation</span>
-                                        @elseif($commande->statut == 'Prête')
-                                            <span class="badge bg-success">Prête</span>
-                                        @elseif($commande->statut == 'Payée')
-                                            <span class="badge bg-primary">Payée</span>
-                                        @endif
+                                        <span class="badge {{ $statusColors[$commande->statut] ?? 'bg-secondary' }}">
+                                            {{ $statusLabels[$commande->statut] ?? 'Inconnu' }}
+                                        </span>
                                     </td>
                                     <td>
                                         @php

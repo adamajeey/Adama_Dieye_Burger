@@ -43,16 +43,19 @@
                             @forelse ($commandes as $commande)
                                 <tr>
                                     <td>{{ $commande->numCommande }}</td>
-                                    <td>{{ $commande->user->name ?? 'N/A' }}</td>
+                                    <td>{{ $commande->user->prenom ?? 'N/A' }} {{ $commande->user->nom ?? 'N/A' }}</td>
                                     <td>
-                                        <span class="badge {{
-                                            $commande->statut == 'En attente' ? 'bg-warning' :
-                                            ($commande->statut == 'En préparation' ? 'bg-info' :
-                                            ($commande->statut == 'Prête' ? 'bg-success' :
-                                            ($commande->statut == 'Payée' ? 'bg-primary' : 'bg-secondary')))
-                                        }}">
-                                            {{ $commande->statut }}
-                                        </span>
+                                        @if($commande->statut == 'En attente' || $commande->statut == 0)
+                                            <span class="badge bg-warning">En attente</span>
+                                        @elseif($commande->statut == 'En préparation' || $commande->statut == 1)
+                                            <span class="badge bg-info">En préparation</span>
+                                        @elseif($commande->statut == 'Prête' || $commande->statut == 2)
+                                            <span class="badge bg-success">Prête</span>
+                                        @elseif($commande->statut == 'Payée' || $commande->statut == 3)
+                                            <span class="badge bg-primary">Payée</span>
+                                        @else
+                                            <span class="badge bg-secondary">{{ $commande->statut }}</span>
+                                        @endif
                                     </td>
                                     <td>{{ $commande->created_at->format('d/m/Y H:i') }}</td>
                                     <td>
@@ -62,7 +65,7 @@
                                                 $total += $detail->burger->prix * $detail->quantite;
                                             }
                                         @endphp
-                                        {{ number_format($total, 2, ',', ' ') }} F CFA
+                                        {{ number_format($total, 0, ',', ' ') }} F CFA
                                     </td>
                                     <td>
                                         <div class="btn-group" role="group">
@@ -97,10 +100,10 @@
                                                             <div class="mb-3">
                                                                 <label for="statut" class="form-label">Statut</label>
                                                                 <select class="form-select" name="statut" id="statut" required>
-                                                                    <option value="En attente" {{ $commande->statut == 'En attente' ? 'selected' : '' }}>En attente</option>
-                                                                    <option value="En préparation" {{ $commande->statut == 'En préparation' ? 'selected' : '' }}>En préparation</option>
-                                                                    <option value="Prête" {{ $commande->statut == 'Prête' ? 'selected' : '' }}>Prête</option>
-                                                                    <option value="Payée" {{ $commande->statut == 'Payée' ? 'selected' : '' }}>Payée</option>
+                                                                    <option value="En attente" {{ $commande->statut == 'En attente' || $commande->statut == 0 ? 'selected' : '' }}>En attente</option>
+                                                                    <option value="En préparation" {{ $commande->statut == 'En préparation' || $commande->statut == 1 ? 'selected' : '' }}>En préparation</option>
+                                                                    <option value="Prête" {{ $commande->statut == 'Prête' || $commande->statut == 2 ? 'selected' : '' }}>Prête</option>
+                                                                    <option value="Payée" {{ $commande->statut == 'Payée' || $commande->statut == 3 ? 'selected' : '' }}>Payée</option>
                                                                 </select>
                                                             </div>
                                                         </div>

@@ -150,14 +150,16 @@
                                     <td>{{ $commande->user->prenom }} {{ $commande->user->nom }}</td>
                                     <td>{{ $commande->created_at->format('d/m/Y H:i') }}</td>
                                     <td>
-                                        @if($commande->statut == 'En attente')
+                                        @if($commande->statut == 'En attente' || $commande->statut == 0)
                                             <span class="badge bg-warning">En attente</span>
-                                        @elseif($commande->statut == 'En préparation')
+                                        @elseif($commande->statut == 'En préparation' || $commande->statut == 1)
                                             <span class="badge bg-info">En préparation</span>
-                                        @elseif($commande->statut == 'Prête')
+                                        @elseif($commande->statut == 'Prête' || $commande->statut == 2)
                                             <span class="badge bg-success">Prête</span>
-                                        @elseif($commande->statut == 'Payée')
+                                        @elseif($commande->statut == 'Payée' || $commande->statut == 3)
                                             <span class="badge bg-primary">Payée</span>
+                                        @else
+                                            <span class="badge bg-secondary">{{ $commande->statut }}</span>
                                         @endif
                                     </td>
                                     <td>
@@ -189,65 +191,66 @@
     </div>
 @endsection
 
-@section('scripts')
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Graphique des statuts de commandes
-            var statusCtx = document.getElementById('statusChart');
-            var statusChart = new Chart(statusCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['En attente', 'En préparation', 'Prête', 'Payée'],
-                    datasets: [{
-                        data: [
-                            {{ $stats['statut_attente'] }},
-                            {{ $stats['statut_preparation'] }},
-                            {{ $stats['statut_prete'] }},
-                            {{ $stats['statut_payee'] }}
-                        ],
-                        backgroundColor: [
-                            'rgba(255, 193, 7, 0.8)',
-                            'rgba(23, 162, 184, 0.8)',
-                            'rgba(40, 167, 69, 0.8)',
-                            'rgba(0, 123, 255, 0.8)'
-                        ],
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                        }
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Graphique des statuts de commandes
+        var statusCtx = document.getElementById('statusChart');
+        var statusChart = new Chart(statusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['En attente', 'En préparation', 'Prête', 'Payée'],
+                datasets: [{
+                    data: [
+                        {{ $stats['statut_attente'] }},
+                        {{ $stats['statut_preparation'] }},
+                        {{ $stats['statut_prete'] }},
+                        {{ $stats['statut_payee'] }}
+                    ],
+                    backgroundColor: [
+                        'rgba(255, 193, 7, 0.8)',
+                        'rgba(23, 162, 184, 0.8)',
+                        'rgba(40, 167, 69, 0.8)',
+                        'rgba(0, 123, 255, 0.8)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
                     }
                 }
-            });
-
-            // Graphique des revenus mensuels
-            var revenueCtx = document.getElementById('revenueChart');
-            var revenueChart = new Chart(revenueCtx, {
-                type: 'bar',
-                data: {
-                    labels: {!! json_encode($revenus_par_mois['mois_labels']) !!},
-                    datasets: [{
-                        label: 'Revenus (F CFA)',
-                        data: {!! json_encode($revenus_par_mois['revenus_par_mois']) !!},
-                        backgroundColor: 'rgba(0, 123, 255, 0.5)',
-                        borderColor: 'rgba(0, 123, 255, 1)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
-            });
+            }
         });
-    </script>
+
+        // Graphique des revenus mensuels
+        var revenueCtx = document.getElementById('revenueChart');
+        var revenueChart = new Chart(revenueCtx, {
+            type: 'bar',
+            data: {
+                labels: {!! json_encode($revenus_par_mois['mois_labels']) !!},
+                datasets: [{
+                    label: 'Revenus (F CFA)',
+                    data: {!! json_encode($revenus_par_mois['revenus_par_mois']) !!},
+                    backgroundColor: 'rgba(0, 123, 255, 0.5)',
+                    borderColor: 'rgba(0, 123, 255, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    });
+</script>
+
+@section('scripts')
 @endsection
