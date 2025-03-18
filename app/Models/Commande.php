@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Permission\Traits\HasPermissions;
 use Spatie\Permission\Traits\HasRoles;
 
+
 class Commande extends Model
 {
     use SoftDeletes, HasRoles, HasPermissions;
