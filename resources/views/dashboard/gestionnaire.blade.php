@@ -60,8 +60,8 @@
             </div>
             <div class="col-sm-12 col-xl-6">
                 <div class="bg-light rounded h-100 p-4">
-                    <h6 class="mb-4">Revenus mensuels</h6>
-                    <canvas id="revenueChart"></canvas>
+                    <h6 class="mb-4">Commandes par mois</h6>
+                    <canvas id="commandesChart"></canvas>
                 </div>
             </div>
         </div>
@@ -226,15 +226,15 @@
             }
         });
 
-        // Graphique des revenus mensuels
-        var revenueCtx = document.getElementById('revenueChart');
-        var revenueChart = new Chart(revenueCtx, {
+        // Graphique des commandes par mois
+        var commandesCtx = document.getElementById('commandesChart');
+        var commandesChart = new Chart(commandesCtx, {
             type: 'bar',
             data: {
-                labels: {!! json_encode($revenus_par_mois['mois_labels']) !!},
+                labels: {!! json_encode($commandes_par_mois['mois_labels']) !!},
                 datasets: [{
-                    label: 'Revenus (F CFA)',
-                    data: {!! json_encode($revenus_par_mois['revenus_par_mois']) !!},
+                    label: 'Nombre de commandes',
+                    data: {!! json_encode($commandes_par_mois['commandes_par_mois']) !!},
                     backgroundColor: 'rgba(0, 123, 255, 0.5)',
                     borderColor: 'rgba(0, 123, 255, 1)',
                     borderWidth: 1

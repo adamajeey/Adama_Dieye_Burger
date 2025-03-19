@@ -46,7 +46,7 @@
                 @if(Auth::user()->role === 'gestionnaire')
                     <div class="nav-item dropdown">
                         <a href="#" class="nav-link dropdown-toggle {{ request()->routeIs('commandes.*') ? 'active' : '' }}" data-bs-toggle="dropdown">
-                            <i class="fa fa-shopping-cart me-2"></i>Gestion Commandes
+                            <i class="fa fa-shopping-cart me-2"></i>Commandes
                         </a>
                         <div class="dropdown-menu bg-transparent border-0">
                             <a href="{{ route('commandes.index') }}" class="dropdown-item">Toutes les commandes</a>

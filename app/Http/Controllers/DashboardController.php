@@ -60,10 +60,10 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
 
-        // Données pour le graphique des revenus mensuels
-        $revenus_par_mois = $this->getMonthlyRevenues();
+        // Données pour le graphique des commandes mensuelles
+        $commandes_par_mois = $this->getCommandesParMois();
 
-        return view('dashboard.gestionnaire', compact('stats', 'low_stock_burgers', 'recent_orders', 'revenus_par_mois'));
+        return view('dashboard.gestionnaire', compact('stats', 'low_stock_burgers', 'recent_orders', 'commandes_par_mois'));
     }
 
     /**
@@ -116,33 +116,39 @@ class DashboardController extends Controller
     }
 
     /**
-     * Récupérer les revenus mensuels pour le graphique
+     * Récupérer le nombre de commandes par mois
      *
      * @return array
      */
-    private function getMonthlyRevenues(): array
+    protected function getCommandesParMois()
     {
-        $months = [];
-        $revenues = [];
-
-        // Derniers 6 mois
-        for ($i = 5; $i >= 0; $i--) {
-            $date = Carbon::now()->subMonths($i);
-            $monthYear = $date->format('M Y');
-            $months[] = $monthYear;
-
-            $monthStart = $date->startOfMonth()->toDateString();
-            $monthEnd = $date->endOfMonth()->toDateString();
-
-            $monthCommandes = Commande::whereBetween('created_at', [$monthStart, $monthEnd])
-                ->get();
-
-            $revenues[] = $this->calculateRevenues($monthCommandes);
+        // Récupérer les commandes des 6 derniers mois
+        $startDate = Carbon::now()->subMonths(5)->startOfMonth();
+        $endDate = Carbon::now()->endOfMonth();
+        $mois_labels = [];
+        $commandes_par_mois = [];
+        // Générer les mois
+        $currentDate = clone $startDate;
+        while ($currentDate <= $endDate) {
+            $mois = $currentDate->format('M Y');
+            $mois_labels[] = $mois;
+            $commandes_par_mois[$mois] = 0;
+            $currentDate->addMonth();
         }
+        // Récupérer toutes les commandes dans cette période
+        $commandes = Commande::whereBetween('created_at', [$startDate, $endDate])
+            ->get();
+        // Calculer le nombre de commandes par mois
+        foreach ($commandes as $commande) {
+            $mois = Carbon::parse($commande->created_at)->format('M Y');
 
+            if (isset($commandes_par_mois[$mois])) {
+                $commandes_par_mois[$mois]++;
+            }
+        }
         return [
-            'mois_labels' => $months,
-            'revenus_par_mois' => $revenues
+            'mois_labels' => array_values($mois_labels),
+            'commandes_par_mois' => array_values($commandes_par_mois),
         ];
     }
 }
