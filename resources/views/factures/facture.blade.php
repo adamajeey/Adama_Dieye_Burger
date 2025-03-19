@@ -89,7 +89,7 @@
 
 <div class="footer">
     <p>Merci pour votre commande! Revenez nous voir bientôt.</p>
-    <p>ISI BURGER - Téléphone: xx xxx xx xx - Email: contact@isiburger.com</p>
+    <p>ISI BURGER - Téléphone: 77 238 65 46 - Email: contact@isiburger.com</p>
 </div>
 </body>
 </html>

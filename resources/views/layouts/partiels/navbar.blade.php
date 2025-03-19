@@ -68,32 +68,32 @@
                 @endif
             </div>
         </div>
-        <div class="nav-item dropdown">
-            <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
-                <i class="fa fa-bell me-lg-2"></i>
-                <span class="d-none d-lg-inline-flex">Notifications</span>
-            </a>
-            <div class="dropdown-menu dropdown-menu-end bg-light border-0 rounded-0 rounded-bottom m-0">
-                <a href="#" class="dropdown-item">
-                    <h6 class="fw-normal mb-0">Nouvelle commande reçue</h6>
-                    <small>Il y a 15 minutes</small>
-                </a>
-                <hr class="dropdown-divider">
-                @if(auth()->user()->role === 'gestionnaire')
-                    <a href="#" class="dropdown-item">
-                        <h6 class="fw-normal mb-0">Stock de burgers faible</h6>
-                        <small>Il y a 30 minutes</small>
-                    </a>
-                    <hr class="dropdown-divider">
-                    <a href="#" class="dropdown-item">
-                        <h6 class="fw-normal mb-0">Paiement reçu</h6>
-                        <small>Il y a 1 heure</small>
-                    </a>
-                    <hr class="dropdown-divider">
-                @endif
-                <a href="#" class="dropdown-item text-center">Voir toutes les notifications</a>
-            </div>
-        </div>
+{{--        <div class="nav-item dropdown">--}}
+{{--            <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">--}}
+{{--                <i class="fa fa-bell me-lg-2"></i>--}}
+{{--                <span class="d-none d-lg-inline-flex">Notifications</span>--}}
+{{--            </a>--}}
+{{--            <div class="dropdown-menu dropdown-menu-end bg-light border-0 rounded-0 rounded-bottom m-0">--}}
+{{--                <a href="#" class="dropdown-item">--}}
+{{--                    <h6 class="fw-normal mb-0">Nouvelle commande reçue</h6>--}}
+{{--                    <small>Il y a 15 minutes</small>--}}
+{{--                </a>--}}
+{{--                <hr class="dropdown-divider">--}}
+{{--                @if(auth()->user()->role === 'gestionnaire')--}}
+{{--                    <a href="#" class="dropdown-item">--}}
+{{--                        <h6 class="fw-normal mb-0">Stock de burgers faible</h6>--}}
+{{--                        <small>Il y a 30 minutes</small>--}}
+{{--                    </a>--}}
+{{--                    <hr class="dropdown-divider">--}}
+{{--                    <a href="#" class="dropdown-item">--}}
+{{--                        <h6 class="fw-normal mb-0">Paiement reçu</h6>--}}
+{{--                        <small>Il y a 1 heure</small>--}}
+{{--                    </a>--}}
+{{--                    <hr class="dropdown-divider">--}}
+{{--                @endif--}}
+{{--                <a href="#" class="dropdown-item text-center">Voir toutes les notifications</a>--}}
+{{--            </div>--}}
+{{--        </div>--}}
         <div class="nav-item dropdown">
             <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
 {{--                <img class="rounded-circle me-lg-2" src="{{ asset('img/user.jpg') }}" alt="" style="width: 40px; height: 40px;">--}}
