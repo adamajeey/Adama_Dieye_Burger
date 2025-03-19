@@ -88,16 +88,16 @@
                         <div class="mb-3">
                             <div class="d-flex justify-content-between mb-2">
                                 <span>Sous-total:</span>
-                                <span id="sous-total">0.00 €</span>
+                                <span id="sous-total">0.00 F CFA</span>
                             </div>
                             <div class="d-flex justify-content-between mb-2">
                                 <span>TVA (20%):</span>
-                                <span id="tva">0.00 €</span>
+                                <span id="tva">0.00 F CFA</span>
                             </div>
                             <hr>
                             <div class="d-flex justify-content-between mb-2">
                                 <strong>Total:</strong>
-                                <strong id="total-with-tax" class="text-primary">0.00 €</strong>
+                                <strong id="total-with-tax" class="text-primary">0.00 F CFA</strong>
                             </div>
                         </div>
                         <div class="mt-auto">
@@ -165,7 +165,7 @@
                     </div>
                 </td>
                 <td>${itemNom}</td>
-                <td>${itemPrix.toFixed(2)} €</td>
+                <td>${itemPrix.toFixed(2)} F CFA</td>
                 <td>
                     <div class="input-group input-group-sm w-75 mx-auto">
                         <button type="button" class="btn btn-sm btn-outline-primary diminuerQuantite" data-index="${index}">
@@ -177,7 +177,7 @@
                         </button>
                     </div>
                 </td>
-                <td>${itemTotal.toFixed(2)} €</td>
+                <td>${itemTotal.toFixed(2)} F CFA</td>
                 <td>
                     <button type="button" class="btn btn-sm btn-danger supprimerItem" data-index="${index}">
                         <i class="fa fa-trash"></i>
@@ -188,14 +188,14 @@
             }
 
             panierItems.innerHTML = html;
-            panierTotal.innerText = total.toFixed(2) + ' €';
-            sousTotal.innerText = total.toFixed(2) + ' €';
+            panierTotal.innerText = total.toFixed(2) + ' F CFA';
+            sousTotal.innerText = total.toFixed(2) + ' F CFA';
 
             const taxAmount = total * 0.2;
-            tva.innerText = taxAmount.toFixed(2) + ' €';
+            tva.innerText = taxAmount.toFixed(2) + ' F CFA';
 
             const totalWithTaxAmount = total + taxAmount;
-            totalWithTax.innerText = totalWithTaxAmount.toFixed(2) + ' €';
+            totalWithTax.innerText = totalWithTaxAmount.toFixed(2) + ' F CFA';
 
             // Ajouter les événements aux boutons
             var diminuerButtons = document.querySelectorAll('.diminuerQuantite');

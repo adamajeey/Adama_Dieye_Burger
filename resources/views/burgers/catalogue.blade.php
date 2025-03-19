@@ -167,33 +167,38 @@
 @endsection
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Récupérer le panier depuis localStorage ou créer un nouveau
+        // Variable globale pour stocker les articles du panier
+        // Récupération depuis le localStorage ou création d'un tableau vide
         let panier = JSON.parse(localStorage.getItem('panier')) || [];
 
-        // Mettre à jour l'affichage du panier
+        /**
+         * Met à jour l'affichage du panier dans l'interface
+         * Calcule le nombre total d'articles et le montant total
+         */
         function updatePanierDisplay() {
             const panierCount = document.getElementById('panierCount');
             const panierItems = document.getElementById('panierItems');
             const panierTotal = document.getElementById('panierTotal');
 
+            // Vérification de l'existence des éléments DOM
             if (!panierCount || !panierItems || !panierTotal) {
                 console.error("Éléments du panier non trouvés dans le DOM");
                 return;
             }
 
-            // Mettre à jour le compteur
+            // Calcul et affichage du nombre total d'articles dans le badge
             panierCount.textContent = panier.reduce(function(total, item) {
                 return total + parseInt(item.quantite);
             }, 0);
 
-            // Si le panier est vide
+            // Affichage d'un message si le panier est vide
             if (panier.length === 0) {
                 panierItems.innerHTML = '<div class="alert alert-info"><i class="fa fa-info-circle me-2"></i>Votre panier est vide</div>';
                 panierTotal.textContent = '0 F CFA';
                 return;
             }
 
-            // Générer les items du panier
+            // Génération du HTML pour chaque article du panier
             let html = '';
             let total = 0;
 
@@ -228,41 +233,55 @@
                     </div>`;
             }
 
+            // Mise à jour du HTML et du total
             panierItems.innerHTML = html;
             panierTotal.textContent = total.toLocaleString('fr-FR') + ' F CFA';
 
-            // Ajouter les événements aux boutons - utiliser des sélecteurs de délégation d'événements
+            // Attachement des écouteurs d'événements aux boutons du panier
             attachPanierEventListeners();
         }
 
-        // Attacher les écouteurs d'événements aux éléments du panier
+        /**
+         * Attache les gestionnaires d'événements aux boutons du panier
+         * en utilisant la délégation d'événements pour optimiser les performances
+         */
         function attachPanierEventListeners() {
             const panierItems = document.getElementById('panierItems');
             if (!panierItems) return;
 
             // Utiliser la délégation d'événements pour tous les boutons dans le panier
             panierItems.addEventListener('click', function(event) {
+                // Trouve le bouton le plus proche qui a été cliqué
                 const target = event.target.closest('.retirerItem, .diminuerQuantite, .augmenterQuantite');
                 if (!target) return;
 
+                // Récupère l'index de l'article dans le panier
                 const index = parseInt(target.getAttribute('data-index'));
 
+                // Exécute l'action correspondante au bouton cliqué
                 if (target.classList.contains('retirerItem')) {
+                    // Supprime l'article du panier
                     panier.splice(index, 1);
                 } else if (target.classList.contains('diminuerQuantite')) {
+                    // Diminue la quantité mais pas en dessous de 1
                     if (panier[index].quantite > 1) {
                         panier[index].quantite--;
                     }
                 } else if (target.classList.contains('augmenterQuantite')) {
+                    // Augmente la quantité
                     panier[index].quantite++;
                 }
 
+                // Sauvegarde et met à jour l'affichage
                 savePanier();
                 updatePanierDisplay();
             });
         }
 
-        // Sauvegarder le panier dans localStorage
+        /**
+         * Sauvegarde le panier dans le localStorage
+         * Gère les erreurs potentielles (ex: stockage plein)
+         */
         function savePanier() {
             try {
                 localStorage.setItem('panier', JSON.stringify(panier));
@@ -271,7 +290,10 @@
             }
         }
 
-        // Initialiser les écouteurs d'événements pour les boutons d'ajout au panier
+        /**
+         * Initialise les boutons d'ajout au panier
+         * pour tous les produits affichés sur la page
+         */
         function initAjouterButtons() {
             const ajouterBoutons = document.querySelectorAll('.ajouterPanier');
             if (!ajouterBoutons.length) {
@@ -279,18 +301,22 @@
                 return;
             }
 
+            // Ajoute un écouteur d'événement à chaque bouton
             ajouterBoutons.forEach(button => {
                 button.addEventListener('click', function() {
+                    // Récupère les données du produit depuis les attributs data-*
                     const id = parseInt(this.getAttribute('data-id'));
                     const libelle = this.getAttribute('data-libelle');
                     const prix = parseFloat(this.getAttribute('data-prix'));
 
-                    // Vérifier si le produit est déjà dans le panier
+                    // Vérifie si le produit est déjà dans le panier
                     const existingItemIndex = panier.findIndex(item => item.id === id);
 
                     if (existingItemIndex !== -1) {
+                        // Si le produit existe, augmente la quantité
                         panier[existingItemIndex].quantite++;
                     } else {
+                        // Sinon, ajoute un nouvel article au panier
                         panier.push({
                             id: id,
                             libelle: libelle,
@@ -299,6 +325,7 @@
                         });
                     }
 
+                    // Sauvegarde le panier, met à jour l'affichage et montre une notification
                     savePanier();
                     updatePanierDisplay();
                     showToast(libelle);
@@ -306,8 +333,12 @@
             });
         }
 
-        // Afficher une notification toast
+        /**
+         * Affiche une notification temporaire après l'ajout d'un produit
+         * @param {string} libelle - Nom du produit ajouté
+         */
         function showToast(libelle) {
+            // Créer l'élément toast
             const toast = document.createElement('div');
             toast.className = 'position-fixed bottom-0 end-0 p-3';
             toast.style.zIndex = '5';
@@ -322,9 +353,10 @@
                         </div>
                     </div>`;
 
+            // Ajoute le toast au document
             document.body.appendChild(toast);
 
-            // Supprimer le toast après 3 secondes
+            // Supprime le toast après 3 secondes
             setTimeout(function() {
                 if (toast && toast.parentNode) {
                     toast.parentNode.removeChild(toast);
@@ -332,13 +364,18 @@
             }, 3000);
         }
 
+        /**
+         * Initialise les boutons du panier (vider et valider)
+         */
         function initPanierButtons() {
             const viderPanierBtn = document.getElementById('viderPanier');
             const validerCommandeBtn = document.getElementById('validerCommande');
 
+            // Gestionnaire d'événement pour vider le panier
             if (viderPanierBtn) {
                 viderPanierBtn.addEventListener('click', function () {
                     if (confirm('Êtes-vous sûr de vouloir vider le panier ?')) {
+                        // Vide le panier et met à jour l'affichage
                         panier = [];
                         savePanier();
                         updatePanierDisplay();
@@ -346,68 +383,123 @@
                 });
             }
 
+            // Gestionnaire d'événement pour valider la commande
             if (validerCommandeBtn) {
                 validerCommandeBtn.addEventListener('click', function () {
-                    let panierc = JSON.parse(localStorage.getItem('panier')) || [];
-
-                    if (panierc.length === 0) {
+                    // Vérifie si le panier est vide
+                    if (panier.length === 0) {
                         alert("Votre panier est vide !");
                         return;
                     }
 
-                    console.log("Données envoyées :", JSON.stringify({ panier: panierc }));
+                    // Désactive le bouton et affiche l'indicateur de chargement
+                    validerCommandeBtn.disabled = true;
+                    validerCommandeBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Traitement...';
 
-                    fetch("http://127.0.0.1:8000/valider-panier", {
+                    // Envoie la requête au serveur avec le jeton CSRF
+                    fetch("{{ route('valider_panier') }}", {
                         method: "POST",
                         headers: {
                             "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
                             "Content-Type": "application/json",
                         },
-                        body: JSON.stringify({ panier: panierc }),
+                        body: JSON.stringify({ panier: panier }),
                     })
                         .then(response => {
+                            // Vérifie si la réponse est OK
                             if (!response.ok) {
                                 throw new Error('Erreur réseau: ' + response.status);
                             }
-                            return response.json(); // Utiliser json() au lieu de text() puis parse
+                            return response.json();
                         })
                         .then(data => {
-                            console.log("Réponse JSON Laravel :", data);
-                            if (data.status === "success") {
-                                alert(data.message);
+                            console.log("Réponse du serveur:", data);
+
+                            // Traitement en cas de succès
+                            if (data.status === "success" || data.message) {
+                                // Crée une notification toast de succès
+                                const toast = document.createElement('div');
+                                toast.className = 'position-fixed top-0 end-0 p-3';
+                                toast.style.zIndex = '5';
+                                toast.innerHTML = `
+                                <div class="toast show bg-white" role="alert" aria-live="assertive" aria-atomic="true">
+                                    <div class="toast-header bg-success text-white">
+                                        <strong class="me-auto">ISI BURGER</strong>
+                                        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                                    </div>
+                                    <div class="toast-body">
+                                        <i class="fa fa-check-circle text-success me-2"></i> ${data.message || "Commande validée avec succès!"}
+                                    </div>
+                                </div>`;
+                                document.body.appendChild(toast);
+
+                                // Vide le panier complètement
+                                panier = [];
                                 localStorage.removeItem("panier");
                                 updatePanierDisplay();
+
+                                // Ferme l'offcanvas après un court délai
+                                setTimeout(() => {
+                                    const offcanvas = bootstrap.Offcanvas.getInstance(document.getElementById('panierOffcanvas'));
+                                    if (offcanvas) {
+                                        offcanvas.hide();
+                                    }
+
+                                    // Restaure le bouton
+                                    validerCommandeBtn.disabled = false;
+                                    validerCommandeBtn.innerHTML = '<i class="fa fa-check me-1"></i>Valider la commande';
+
+                                    // Note: La redirection a été supprimée, on reste sur la page actuelle
+                                }, 1500);
                             } else {
-                                alert("Erreur : " + data.message);
+                                // Traitement en cas d'erreur côté serveur
+                                alert("Erreur : " + (data.message || "Une erreur est survenue"));
+
+                                // Restaure le bouton
+                                validerCommandeBtn.disabled = false;
+                                validerCommandeBtn.innerHTML = '<i class="fa fa-check me-1"></i>Valider la commande';
                             }
                         })
-                        .catch(error => console.error("Erreur Fetch :", error));
+                        .catch(error => {
+                            // Gestion des erreurs réseau ou autres
+                            console.error("Erreur lors de la validation:", error);
+                            alert("Une erreur est survenue lors de la validation de votre commande.");
+
+                            // Restaure le bouton
+                            validerCommandeBtn.disabled = false;
+                            validerCommandeBtn.innerHTML = '<i class="fa fa-check me-1"></i>Valider la commande';
+                        });
                 });
             }
         }
 
-        // Initialiser le formulaire de filtre
+        /**
+         * Initialise le formulaire de filtre des produits
+         */
         function initFilterForm() {
             const filterForm = document.getElementById('filterForm');
             if (!filterForm) return;
 
+            // Gestion de la soumission du formulaire
             filterForm.addEventListener('submit', function(e) {
                 e.preventDefault();
 
+                // Récupère les valeurs des filtres
                 const prixMin = document.getElementById('prix_min').value;
                 const prixMax = document.getElementById('prix_max').value;
                 const libelle = document.getElementById('libelle').value;
 
-                // Construire l'URL avec les paramètres
+                // Construit l'URL avec les paramètres
                 let url = '{{ route("catalogue") }}?';
                 if (prixMin) url += `prix_min=${prixMin}&`;
                 if (prixMax) url += `prix_max=${prixMax}&`;
                 if (libelle) url += `libelle=${encodeURIComponent(libelle)}`;
 
-                // Rediriger avec les filtres
+                // Redirige avec les filtres
                 window.location.href = url;
             });
 
+            // Gestion du bouton de réinitialisation
             const resetButton = filterForm.querySelector('button[type="reset"]');
             if (resetButton) {
                 resetButton.addEventListener('click', function() {
@@ -416,11 +508,11 @@
             }
         }
 
-        // Démarrer l'application
+        // Initialisation de l'application
         try {
             console.log("Initialisation de l'application de catalogue de burgers...");
 
-            // Initialiser tous les composants
+            // Initialise tous les composants dans l'ordre
             initAjouterButtons();
             initPanierButtons();
             initFilterForm();
