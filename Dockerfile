@@ -1,8 +1,8 @@
 FROM php:8.2-fpm
 
-# Arguments defined in docker-compose.yml
-ARG user
-ARG uid
+# Arguments defined in docker-compose.yml with default values
+ARG user=laraveluser
+ARG uid=1000
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -33,13 +33,17 @@ RUN mkdir -p /home/$user/.composer && \
 # Set working directory
 WORKDIR /var/www
 
-# Copy application files
-COPY . /var/www/
+# Copy composer files first for better caching
+COPY composer.json composer.lock ./
 
-# Install dependencies
-RUN composer install --no-interaction --no-dev --optimize-autoloader
-# Commenté pour éviter l'erreur avec les fichiers frontend manquants
-# RUN npm install && npm run build
+# Install composer dependencies
+RUN composer install --no-interaction --no-dev --optimize-autoloader --no-scripts
+
+# Copy the rest of the application
+COPY . .
+
+# Copy .env.example to .env
+RUN cp .env.example .env
 
 # Generate application key
 RUN php artisan key:generate
