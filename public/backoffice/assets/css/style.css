@@ -275,3 +275,8 @@
     background: var(--dark);
     border-color: var(--primary);
 }
+
+.content.pgcon {
+    width: 100%;
+    margin-left: 0px;
+}
