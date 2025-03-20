@@ -15,28 +15,9 @@ pipeline {
                     userRemoteConfigs: [[url: 'https://github.com/adamajeey/Adama_Dieye_Burger.git']]
                 ])
 
+                // Vérifier si les fichiers ont été correctement récupérés
+                sh 'ls -la'
                 echo 'Code récupéré avec succès depuis GitHub'
-            }
-        }
-
-        stage('Install Dependencies') {
-            steps {
-                // Utilisation de Docker pour installer les dépendances
-                sh 'docker run --rm -v "${WORKSPACE}":/app composer:latest composer install --no-interaction --no-progress'
-                sh 'docker run --rm -v "${WORKSPACE}":/app -w /app node:16 npm install'
-                sh 'docker run --rm -v "${WORKSPACE}":/app -w /app node:16 npm run build || true'
-
-                echo 'Dépendances installées avec succès'
-            }
-        }
-
-        stage('Environment Setup') {
-            steps {
-                // Configuration de l'environnement Laravel
-                sh 'cp .env.example .env'
-                sh 'docker run --rm -v "${WORKSPACE}":/app php:8.2-cli php /app/artisan key:generate'
-
-                echo 'Environnement configuré avec succès'
             }
         }
 
@@ -53,8 +34,11 @@ pipeline {
         stage('Run Container') {
             steps {
                 // Exécuter un conteneur temporaire pour tester l'image
-                sh 'docker run --rm --name test-container-${BUILD_NUMBER} -d isi-burger:${BUILD_NUMBER} || true'
+                sh 'docker run --name test-container-${BUILD_NUMBER} -d isi-burger:${BUILD_NUMBER} || true'
+                sh 'sleep 10'
+                sh 'docker logs test-container-${BUILD_NUMBER} || true'
                 sh 'docker stop test-container-${BUILD_NUMBER} || true'
+                sh 'docker rm test-container-${BUILD_NUMBER} || true'
 
                 echo 'Conteneur de test exécuté avec succès'
             }
