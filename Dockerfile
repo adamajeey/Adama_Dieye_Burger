@@ -38,7 +38,8 @@ COPY . /var/www/
 
 # Install dependencies
 RUN composer install --no-interaction --no-dev --optimize-autoloader
-RUN npm install && npm run build
+# Commenté pour éviter l'erreur avec les fichiers frontend manquants
+# RUN npm install && npm run build
 
 # Generate application key
 RUN php artisan key:generate
