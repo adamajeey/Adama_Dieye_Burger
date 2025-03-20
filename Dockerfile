@@ -1,8 +1,8 @@
 FROM php:8.2-fpm
 
-# Arguments defined in docker-compose.yml
-ARG user
-ARG uid
+# Arguments defined in docker-compose.yml with default values
+ARG user=laraveluser
+ARG uid=1000
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \

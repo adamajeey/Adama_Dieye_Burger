@@ -19,10 +19,31 @@ pipeline {
             }
         }
 
-        stage('Image Build') {
+        stage('Install Dependencies') {
             steps {
-                // Construction de l'image Docker directement
-                sh 'docker build -t isi-burger:${BUILD_NUMBER} .'
+                // Utilisation de Docker pour installer les dépendances
+                sh 'docker run --rm -v "${WORKSPACE}":/app composer:latest composer install --no-interaction --no-progress'
+                sh 'docker run --rm -v "${WORKSPACE}":/app -w /app node:16 npm install'
+                sh 'docker run --rm -v "${WORKSPACE}":/app -w /app node:16 npm run build || true'
+
+                echo 'Dépendances installées avec succès'
+            }
+        }
+
+        stage('Environment Setup') {
+            steps {
+                // Configuration de l'environnement Laravel
+                sh 'cp .env.example .env'
+                sh 'docker run --rm -v "${WORKSPACE}":/app php:8.2-cli php /app/artisan key:generate'
+
+                echo 'Environnement configuré avec succès'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                // Construction de l'image Docker avec les arguments nécessaires
+                sh 'docker build --build-arg user=laraveluser --build-arg uid=1000 -t isi-burger:${BUILD_NUMBER} .'
                 sh 'docker tag isi-burger:${BUILD_NUMBER} isi-burger:latest'
 
                 echo 'Image Docker construite avec succès'
@@ -31,10 +52,9 @@ pipeline {
 
         stage('Run Container') {
             steps {
-                // Exécuter un conteneur pour tester l'image
-                sh 'docker run --name test-container-${BUILD_NUMBER} -d isi-burger:latest'
+                // Exécuter un conteneur temporaire pour tester l'image
+                sh 'docker run --rm --name test-container-${BUILD_NUMBER} -d isi-burger:${BUILD_NUMBER} || true'
                 sh 'docker stop test-container-${BUILD_NUMBER} || true'
-                sh 'docker rm test-container-${BUILD_NUMBER} || true'
 
                 echo 'Conteneur de test exécuté avec succès'
             }
