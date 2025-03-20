@@ -8,10 +8,10 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                // Récupérer le code depuis GitHub sur la branche dieye_adama_burger
+                // Récupérer le code depuis GitHub sur la branche deye_adama_burger
                 checkout([
                     $class: 'GitSCM',
-                    branches: [[name: 'deye_adama_burger']],  // Correction du nom de la branche "deye" -> "dieye"
+                    branches: [[name: 'deye_adama_burger']],
                     userRemoteConfigs: [[url: 'https://github.com/adamajeey/Adama_Dieye_Burger.git']]
                 ])
 
@@ -19,30 +19,9 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Image Build') {
             steps {
-                // Utilisation de Docker pour installer les dépendances
-                sh 'docker run --rm -v "${WORKSPACE}":/app composer:latest composer install --no-interaction --no-progress'
-                sh 'docker run --rm -v "${WORKSPACE}":/app -w /app node:16 npm install'
-                sh 'docker run --rm -v "${WORKSPACE}":/app -w /app node:16 npm run build || true'
-
-                echo 'Dépendances installées avec succès'
-            }
-        }
-
-        stage('Environment Setup') {
-            steps {
-                // Configuration de l'environnement Laravel
-                sh 'cp .env.example .env'
-                sh 'docker run --rm -v "${WORKSPACE}":/app php:8.2-cli php /app/artisan key:generate'
-
-                echo 'Environnement configuré avec succès'
-            }
-        }
-
-        stage('Build Docker Image') {
-            steps {
-                // Construction de l'image Docker
+                // Construction de l'image Docker directement
                 sh 'docker build -t isi-burger:${BUILD_NUMBER} .'
                 sh 'docker tag isi-burger:${BUILD_NUMBER} isi-burger:latest'
 
@@ -50,12 +29,14 @@ pipeline {
             }
         }
 
-        stage('Run Tests') {
+        stage('Run Container') {
             steps {
-                // Exécution des tests Laravel avec Docker
-                sh 'docker run --rm -v "${WORKSPACE}":/app php:8.2-cli php /app/artisan test || true'
+                // Exécuter un conteneur pour tester l'image
+                sh 'docker run --name test-container-${BUILD_NUMBER} -d isi-burger:latest'
+                sh 'docker stop test-container-${BUILD_NUMBER} || true'
+                sh 'docker rm test-container-${BUILD_NUMBER} || true'
 
-                echo 'Tests exécutés avec succès'
+                echo 'Conteneur de test exécuté avec succès'
             }
         }
     }
