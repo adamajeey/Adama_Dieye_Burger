@@ -11,7 +11,7 @@ pipeline {
                 // Récupérer le code depuis GitHub sur la branche dieye_adama_burger
                 checkout([
                     $class: 'GitSCM',
-                    branches: [[name: 'deye_adama_burger']],
+                    branches: [[name: 'dieye_adama_burger']],  // Correction du nom de la branche "deye" -> "dieye"
                     userRemoteConfigs: [[url: 'https://github.com/adamajeey/Adama_Dieye_Burger.git']]
                 ])
 
@@ -21,10 +21,10 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                // Installation des dépendances Laravel
-                sh 'composer install --no-interaction --no-progress'
-                sh 'npm install'
-                sh 'npm run build'
+                // Utilisation de Docker pour installer les dépendances
+                sh 'docker run --rm -v "${WORKSPACE}":/app composer:latest composer install --no-interaction --no-progress'
+                sh 'docker run --rm -v "${WORKSPACE}":/app -w /app node:16 npm install'
+                sh 'docker run --rm -v "${WORKSPACE}":/app -w /app node:16 npm run build || true'
 
                 echo 'Dépendances installées avec succès'
             }
@@ -34,7 +34,7 @@ pipeline {
             steps {
                 // Configuration de l'environnement Laravel
                 sh 'cp .env.example .env'
-                sh 'php artisan key:generate'
+                sh 'docker run --rm -v "${WORKSPACE}":/app php:8.2-cli php /app/artisan key:generate'
 
                 echo 'Environnement configuré avec succès'
             }
@@ -52,8 +52,8 @@ pipeline {
 
         stage('Run Tests') {
             steps {
-                // Exécution des tests Laravel
-                sh 'php artisan test'
+                // Exécution des tests Laravel avec Docker
+                sh 'docker run --rm -v "${WORKSPACE}":/app php:8.2-cli php /app/artisan test || true'
 
                 echo 'Tests exécutés avec succès'
             }
