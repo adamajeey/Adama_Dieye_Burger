@@ -1,0 +1,63 @@
+services:
+    # Service pour l'application Laravel
+    app:
+        build:
+            args:
+                user: laraveluser
+                uid: 1000
+            context: ./
+            dockerfile: Dockerfile
+        image: isi-burger
+        container_name: isi-burger-app
+        restart: unless-stopped
+        working_dir: /var/www/
+        volumes:
+            - ./:/var/www
+        networks:
+            - isi-burger-network
+
+    # Serveur web NGINX
+    nginx:
+        image: nginx:alpine
+        container_name: isi-burger-nginx
+        restart: unless-stopped
+        ports:
+            - 8000:80
+        volumes:
+            - ./:/var/www
+            - ./docker-config/nginx:/etc/nginx/conf.d/
+        networks:
+            - isi-burger-network
+
+    # Service de base de données MySQL
+    db:
+        image: mysql:8.0
+        container_name: isi-burger-db
+        restart: unless-stopped
+        environment:
+            MYSQL_DATABASE: ${DB_DATABASE}
+            MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+            MYSQL_PASSWORD: ${DB_PASSWORD}
+            MYSQL_USER: ${DB_USERNAME}
+            SERVICE_TAGS: dev
+            SERVICE_NAME: mysql
+        volumes:
+            - ./docker-config/mysql:/docker-entrypoint-initdb.d
+            - isi-burger-data:/var/lib/mysql
+        networks:
+            - isi-burger-network
+
+    # Service Redis pour la mise en cache
+    redis:
+        image: redis:alpine
+        container_name: isi-burger-redis
+        restart: unless-stopped
+        networks:
+            - isi-burger-network
+
+networks:
+    isi-burger-network:
+        driver: bridge
+
+volumes:
+    isi-burger-data:
