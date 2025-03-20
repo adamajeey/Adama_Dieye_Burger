@@ -11,7 +11,7 @@ pipeline {
                 // Récupérer le code depuis GitHub sur la branche dieye_adama_burger
                 checkout([
                     $class: 'GitSCM',
-                    branches: [[name: 'dieye_adama_burger']],
+                    branches: [[name: 'deye_adama_burger']],
                     userRemoteConfigs: [[url: 'https://github.com/adamajeey/Adama_Dieye_Burger.git']]
                 ])
 
