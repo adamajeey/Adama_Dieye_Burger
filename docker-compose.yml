@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
     # Service pour l'application Laravel
     app:
@@ -18,9 +16,9 @@ services:
         networks:
             - isi-burger-network
         depends_on:
-            - db
+            - db  # Assurez-vous que 'db' est bien défini
         env_file:
-            - .env.docker  # Utilise le fichier .env.docker (voir configuration ci-dessous)
+            - .env.docker  # Utilise le fichier .env.docker pour la configuration des variables d'environnement
 
     # Serveur web NGINX
     nginx:
@@ -28,7 +26,7 @@ services:
         container_name: isi-burger-nginx
         restart: unless-stopped
         ports:
-            - "8000:80"
+            - "8000:80"  # Accès via le port 8000
         volumes:
             - ./:/var/www
             - ./docker-config/nginx:/etc/nginx/conf.d/
@@ -43,12 +41,13 @@ services:
         container_name: isi-burger-db
         restart: unless-stopped
         environment:
-            MYSQL_DATABASE: burger_db
-            MYSQL_ALLOW_EMPTY_PASSWORD: "yes"  # Permet les connexions sans mot de passe
+            MYSQL_ROOT_PASSWORD: ""  # Pas de mot de passe pour root
+            MYSQL_DATABASE: burger_db  # Nom de la base de données par défaut
+            MYSQL_ALLOW_EMPTY_PASSWORD: "yes"  # Permet l'authentification sans mot de passe
         ports:
-            - "3308:3306"  # Accès à MySQL depuis l'hôte sur le port 3308
+            - "3307:3306"  # Utiliser le port 3306 pour la connexion à la base de données
         volumes:
-            - isi-burger-data:/var/lib/mysql
+            - isi-burger-data:/var/lib/mysql  # Volume persistant pour les données MySQL
         networks:
             - isi-burger-network
 
