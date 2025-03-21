@@ -8,7 +8,6 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                // Récupérer le code depuis GitHub sur la branche deye_adama_burger
                 checkout([
                     $class: 'GitSCM',
                     branches: [[name: 'deye_adama_burger']],
