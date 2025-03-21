@@ -35,15 +35,10 @@ services:
         container_name: isi-burger-db
         restart: unless-stopped
         environment:
-            MYSQL_DATABASE: ${DB_DATABASE}
-            MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
-            MYSQL_PASSWORD: ${DB_PASSWORD}
-            MYSQL_USER: ${DB_USERNAME}
-            SERVICE_TAGS: dev
-            SERVICE_NAME: mysql
-        volumes:
-            - ./docker-config/mysql:/docker-entrypoint-initdb.d
-            - isi-burger-data:/var/lib/mysql
+            MYSQL_DATABASE: burger_db
+            MYSQL_ALLOW_EMPTY_PASSWORD: "yes"  # Permet explicitement un mot de passe vide
+        ports:
+            - "3306:3306"  # Port corrigé pour correspondre au port local
         networks:
             - isi-burger-network
 

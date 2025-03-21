@@ -42,8 +42,8 @@ RUN composer install --no-interaction --no-dev --optimize-autoloader --no-script
 # Copy the rest of the application
 COPY . .
 
-# Copy .env.example to .env
-RUN cp .env.example .env
+# Copier env.docker en tant que .env au lieu de .env.example
+COPY env.docker .env
 
 # Generate application key
 RUN php artisan key:generate
