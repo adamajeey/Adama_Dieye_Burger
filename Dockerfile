@@ -37,7 +37,7 @@ WORKDIR /var/www
 COPY composer.json composer.lock ./
 
 # Install composer dependencies
-RUN composer install --no-interaction --no-dev --optimize-autoloader --no-scripts
+RUN composer install --no-interaction --optimize-autoloader --no-scripts
 
 # Copy the rest of the application
 COPY . .
@@ -46,7 +46,7 @@ COPY . .
 COPY env.docker .env
 
 # Generate application key
-RUN php artisan key:generate
+#RUN php artisan key:generate
 
 # Set permissions
 RUN chown -R $user:$user /var/www
