@@ -7,7 +7,7 @@ services:
             args:
                 user: laraveluser
                 uid: 1000
-            context: ./
+            context: ./  # Contexte pour le build
             dockerfile: Dockerfile
         image: isi-burger
         container_name: isi-burger-app
@@ -20,7 +20,7 @@ services:
         depends_on:
             - db
         env_file:
-            - .env.docker  # Utilise le fichier .env.docker
+            - .env.docker  # Utilise le fichier .env.docker (voir configuration ci-dessous)
 
     # Serveur web NGINX
     nginx:
@@ -44,10 +44,9 @@ services:
         restart: unless-stopped
         environment:
             MYSQL_DATABASE: burger_db
-            MYSQL_ROOT_PASSWORD: ""  # Pas de mot de passe pour MySQL
-            MYSQL_ALLOW_EMPTY_PASSWORD: "yes"  # Autorise les connexions sans mot de passe (pour test uniquement)
+            MYSQL_ALLOW_EMPTY_PASSWORD: "yes"  # Permet les connexions sans mot de passe
         ports:
-            - "3308:3306"
+            - "3308:3306"  # Accès à MySQL depuis l'hôte sur le port 3308
         volumes:
             - isi-burger-data:/var/lib/mysql
         networks:
@@ -63,8 +62,8 @@ services:
 
 networks:
     isi-burger-network:
-        driver: bridge
+        driver: bridge  # Utilisation du réseau bridge pour une communication interne sécurisée
 
 volumes:
     isi-burger-data:
-        driver: local
+        driver: local  # Volume local pour la persistance des données MySQL
